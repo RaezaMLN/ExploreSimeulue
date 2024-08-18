@@ -38,7 +38,7 @@ export const uploadImage = async (file: File) => {
 };
 
 // Function to check admin credentials
-export const checkAdminCredentials = async (username, password) => {
+export const checkAdminCredentials = async (username: any, password: any) => {
   const adminsRef = collection(firestore, 'admins');
   const q = query(adminsRef, where('username', '==', username), where('password', '==', password));
   const querySnapshot = await getDocs(q);
