@@ -23,7 +23,7 @@ const SignIn: React.FC = () => {
     }
   }, [router]);
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e:any) => {
     e.preventDefault();
     try {
       const adminsRef = collection(firestore, "admins");

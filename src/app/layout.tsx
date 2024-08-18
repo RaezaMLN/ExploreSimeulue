@@ -1,5 +1,5 @@
 "use client";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import "jsvectormap/dist/jsvectormap.css";
 import "flatpickr/dist/flatpickr.min.css";
 import "@/css/satoshi.css";
@@ -22,11 +22,12 @@ export default function RootLayout({
   }, []);
 
   const router = useRouter();
+  const pathname = usePathname(); // Use usePathname to get the current path
 
   useEffect(() => {
     const admin = localStorage.getItem("admin");
 
-    if (!admin && router.pathname !== "/auth/signin") {
+    if (!admin && pathname !== "/auth/signin") {
       router.push("/auth/signin"); // Redirect ke halaman login jika belum login
     }
   }, [router]);

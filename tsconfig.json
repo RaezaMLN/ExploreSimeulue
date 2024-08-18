@@ -21,6 +21,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/feedback/edit/page.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/feedback/edit/page.jsx", "src/app/wisata/page.jsx", "src/app/wisata/edit/page.jsx", "src/app/wisata/add/page.tsx", "src/app/feedback/add.jsx"],
   "exclude": ["node_modules"]
 }

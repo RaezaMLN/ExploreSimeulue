@@ -96,7 +96,7 @@ const EditWisata = () => {
           'success'
         );
 
-        router.push('/');
+        router.push('/wisata');
       }
     });
   };
