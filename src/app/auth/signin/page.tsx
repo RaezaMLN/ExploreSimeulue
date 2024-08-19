@@ -72,16 +72,15 @@ const SignIn: React.FC = () => {
                 />
                 <Image
                   className="dark:hidden"
-                  src={"/images/logo/logo-dark.svg"}
+                  src={"/images/logo/logo.png"}
                   alt="Logo"
                   width={176}
                   height={32}
                 />
               </Link>
 
-              <p className="2xl:px-20">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit
-                suspendisse.
+              <p className="3xl:px-20">
+                Lets Explore Wonderful Island of Simeulue
               </p>
 
               <span className="mt-15 inline-block">
