@@ -11,7 +11,6 @@ import {
 import { firebaseSDK } from "@/services/firebase";
 import useAuth from "@/hooks/useAuth"; // Ensure correct import path
 import Swal from "sweetalert2";
-import { Metadata } from "next";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import Link from "next/link";
 import { useRouter } from "next/navigation";

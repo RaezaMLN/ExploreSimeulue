@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import { firebaseSDK } from '@/services/firebase';
 import Swal from 'sweetalert2';
+import DefaultLayout from '@/components/Layouts/DefaultLayout';
 
 const firestore = getFirestore(firebaseSDK);
 
@@ -31,6 +32,8 @@ export default function AddFeedback() {
   };
 
   return (
+    <>
+    <DefaultLayout>
     <main className="h-screen p-4 bg-gray-100">
       <div className="container mx-auto bg-white shadow-md rounded-lg p-6">
         <h1 className="text-2xl font-bold mb-4">Tambah Umpan Balik</h1>
@@ -51,5 +54,7 @@ export default function AddFeedback() {
         </form>
       </div>
     </main>
+    </DefaultLayout>
+    </>
   );
 }

@@ -48,3 +48,15 @@ export const checkAdminCredentials = async (username: any, password: any) => {
   }
   return true; // Matching admin found
 };
+
+// Function to get document count for a collection
+export const getCollectionCount = async (collectionName: string): Promise<number> => {
+  try {
+    const collRef = collection(firestore, collectionName);
+    const snapshot = await getDocs(collRef);
+    return snapshot.size;
+  } catch (error) {
+    console.error(`Error getting count for collection ${collectionName}:`, error);
+    throw error;
+  }
+};

@@ -21,6 +21,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/feedback/edit/page.jsx", "src/app/wisata/page.jsx", "src/app/wisata/edit/page.jsx", "src/app/wisata/add/page.tsx", "src/app/feedback/add.jsx", "src/app/pengajuan_wisata/page.tsx", "src/app/feedback/page.jsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/feedback/edit/page.jsx", "src/app/wisata/page.jsx", "src/app/wisata/edit/page.jsx", "src/app/wisata/add/page.tsx", "src/app/feedback/add/add.jsx", "src/app/pengajuan_wisata/page.tsx", "src/app/feedback/page.jsx", "src/app/users/page.jsx", "src/app/users/edit/page.tsx"],
   "exclude": ["node_modules"]
 }
