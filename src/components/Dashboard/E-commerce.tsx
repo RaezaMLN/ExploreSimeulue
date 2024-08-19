@@ -44,6 +44,11 @@ const ECommerce: React.FC = () => {
 
   return (
     <>
+    {/* Banner Section */}
+    <div className="mb-8 p-4 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg shadow-lg text-center text-white">
+        <h2 className="text-2xl font-bold md:text-3xl lg:text-4xl">Welcome Admin Explore Simeulue</h2>
+        <p className="mt-2 text-lg md:text-xl lg:text-2xl">Manage your tourism data with ease and efficiency</p>
+      </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
         {/* Existing CardDataStats components */}
         <CardDataStats
@@ -132,11 +137,7 @@ const ECommerce: React.FC = () => {
         </CardDataStats>
       </div>
   
-      {/* Banner Section */}
-      <div className="mt-8 p-4 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg shadow-lg text-center text-white">
-        <h2 className="text-2xl font-bold md:text-3xl lg:text-4xl">Welcome Admin Explore Simeulue</h2>
-        <p className="mt-2 text-lg md:text-xl lg:text-2xl">Manage your tourism data with ease and efficiency</p>
-      </div>
+      
     </>
   );
 }
