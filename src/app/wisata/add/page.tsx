@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import { collection, addDoc } from "firebase/firestore";
-import { firestore, uploadImage } from '@/services/firebase'
+import { firestore, uploadImage } from '@/services/firebase';
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
+import { showAlert } from '@/services/sweetalert';
+import { useRouter } from 'next/navigation';
+
 
 export default function AddWisata() {
   const [namaWisata, setNamaWisata] = useState("");
@@ -15,7 +18,14 @@ export default function AddWisata() {
   const [deskripsi, setDeskripsi] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [imageURL, setImageURL] = useState<string | null>(null);
-  const [lokasi, setLokasi] = useState({ latitude: "", longitude: "" });
+  const [lokasi, setLokasi] = useState<{ latitude: number; longitude: number }>({
+    latitude: 0.0,
+    longitude: 0.0,
+  });
+  
+
+
+  const router = useRouter(); // Initialize the router
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -31,6 +41,17 @@ export default function AddWisata() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+  
+    // Validate latitude and longitude
+    if (!isValidLatitude(lokasi.latitude) || !isValidLongitude(lokasi.longitude)) {
+      showAlert("Error", "Latitude or Longitude is invalid", "error");
+  
+      // Reset latitude and longitude inputs
+      setLokasi({ latitude: 0.0, longitude: 0.0 });
+  
+      return; // Prevent form submission
+    }
+  
     try {
       const wisataRef = collection(firestore, "wisata");
       await addDoc(wisataRef, {
@@ -39,16 +60,23 @@ export default function AddWisata() {
         alamat,
         waktu_operasional: waktuOperasional,
         karcis,
-        rating,
+        rating: parseFloat(rating), // Rating dikonversi ke number
         deskripsi,
         image: imageURL, // Simpan URL gambar
         lokasi: {
-          latitude: parseFloat(lokasi.latitude),
-          longitude: parseFloat(lokasi.longitude),
+          latitude: lokasi.latitude,
+          longitude: lokasi.longitude,
         }
       });
-      alert("Data wisata berhasil ditambahkan");
-      // Optionally, redirect or clear form
+  
+      showAlert("Sukses", "Data wisata berhasil ditambahkan", "success");
+  
+      // Redirect to /wisata
+      setTimeout(() => {
+        router.push('/wisata');
+      }, 1500); // Delay before redirect to allow alert to be visible
+  
+      // Optionally, clear form
       setNamaWisata("");
       setKategori("");
       setAlamat("");
@@ -58,12 +86,16 @@ export default function AddWisata() {
       setDeskripsi("");
       setImage(null);
       setImageURL(null);
-      setLokasi({ latitude: "", longitude: "" });
+      setLokasi({ latitude: 0.0, longitude: 0.0 });
     } catch (error) {
       console.error("Error adding document: ", error);
+      showAlert("Error", "Gagal menambahkan data wisata", "error");
     }
   };
-
+  
+  const isValidLatitude = (lat: number) => lat >= -90 && lat <= 90;
+  const isValidLongitude = (lon: number) => lon >= -180 && lon <= 180;
+  
   return (
     <>
     <DefaultLayout>
@@ -119,7 +151,7 @@ export default function AddWisata() {
           <div>
             <label className="block text-sm font-medium text-gray-700">Harga Karcis</label>
             <input
-              type="number"
+              type="text"
               value={karcis}
               onChange={(e) => setKarcis(e.target.value)}
               required
@@ -164,22 +196,25 @@ export default function AddWisata() {
           <div>
             <label className="block text-sm font-medium text-gray-700">Lokasi</label>
             <div className="flex space-x-2">
-              <input
-                type="text"
-                placeholder="Latitude"
-                value={lokasi.latitude}
-                onChange={(e) => setLokasi((prev) => ({ ...prev, latitude: e.target.value }))}
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-              <input
-                type="text"
-                placeholder="Longitude"
-                value={lokasi.longitude}
-                onChange={(e) => setLokasi((prev) => ({ ...prev, longitude: e.target.value }))}
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
+            <input
+  type="number"
+  step="0.0001"
+  placeholder="Latitude"
+  value={lokasi.latitude}
+  onChange={(e) => setLokasi((prev) => ({ ...prev, latitude: parseFloat(e.target.value) }))}
+  required
+  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+/>
+<input
+  type="number"
+  step="0.0001"
+  placeholder="Longitude"
+  value={lokasi.longitude}
+  onChange={(e) => setLokasi((prev) => ({ ...prev, longitude: parseFloat(e.target.value) }))}
+  required
+  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+/>
+
             </div>
           </div>
           <button
