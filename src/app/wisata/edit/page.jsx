@@ -19,6 +19,7 @@ const EditWisata = () => {
   const [lokasi, setLokasi] = useState({ latitude: '', longitude: '' });
   const [image, setImage] = useState(null);
   const [existingImage, setExistingImage] = useState('');
+  const [isOpen, setIsOpen] = useState('open'); // New state for status
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
@@ -39,6 +40,7 @@ const EditWisata = () => {
           setDeskripsi(data.deskripsi);
           setLokasi(data.lokasi);
           setExistingImage(data.image);
+          setIsOpen(data.is_open || 'open'); // Set the is_open value from data
         } else {
           console.log('No such document!');
         }
@@ -95,6 +97,7 @@ const EditWisata = () => {
             longitude: parseFloat(lokasi.longitude) // Convert longitude to number
           },
           image: imageUrl,
+          is_open: isOpen, // Save the status
         });
 
         Swal.fire('Saved!', 'Your changes have been saved.', 'success');
@@ -145,13 +148,25 @@ const EditWisata = () => {
             <input type="number" step="0.0001" id="longitude" value={lokasi.longitude} onChange={(e) => setLokasi({ ...lokasi, longitude: e.target.value })} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required />
           </div>
           <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="isOpen">Status</label>
+            <select
+              id="isOpen"
+              value={isOpen}
+              onChange={(e) => setIsOpen(e.target.value)}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            >
+              <option value="open">Buka</option>
+              <option value="closed">Tutup</option>
+            </select>
+          </div>
+          <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="image">Image</label>
             <input type="file" id="image" onChange={(e) => setImage(e.target.files ? e.target.files[0] : null)} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
           </div>
-            <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Submit</button>
-          </form>
-        </div>
-      </DefaultLayout>
+          <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Submit</button>
+        </form>
+      </div>
+    </DefaultLayout>
   );
 };
 

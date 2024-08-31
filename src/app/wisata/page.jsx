@@ -1,26 +1,43 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getFirestore, collection, getDocs, doc, deleteDoc, writeBatch, query, where } from "firebase/firestore";
+import { getFirestore, collection, getDocs, query, where, orderBy, doc, deleteDoc, writeBatch } from "firebase/firestore";
 import { firebaseSDK } from "@/services/firebase";
-import useAuth from "@/hooks/useAuth"; // Ensure correct import path
+import useAuth from "@/hooks/useAuth";
 import Swal from "sweetalert2";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
 
 export default function Home() {
   useAuth(); // Check authentication
   const router = useRouter();
   const firestore = getFirestore(firebaseSDK);
   const [wisataData, setWisataData] = useState([]);
-  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all"); // New state for category filter
 
   useEffect(() => {
     const fetchData = async () => {
       const wisataCollection = collection(firestore, "wisata");
-      const wisataSnapshot = await getDocs(wisataCollection);
+      let wisataQuery = wisataCollection;
+
+      // Add category filter if selected
+      if (selectedCategory !== "all") {
+        wisataQuery = query(wisataCollection, where("kategori", "==", selectedCategory));
+      }
+
+      // Add search filter
+      if (searchQuery) {
+        wisataQuery = query(
+          wisataQuery,
+          orderBy("nama_wisata"),
+          where("nama_wisata", ">=", searchQuery.toLowerCase()),
+          where("nama_wisata", "<=", searchQuery.toLowerCase() + "\uf8ff")
+        );
+      }
+
+      const wisataSnapshot = await getDocs(wisataQuery);
       const wisataList = wisataSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -29,12 +46,21 @@ export default function Home() {
     };
 
     fetchData();
-  }, [firestore]);
+  }, [firestore, searchQuery, selectedCategory]); // Add selectedCategory to dependencies
+
+  const handleSearch = (event) => {
+    event.preventDefault();
+    const query = event.target.searchInput.value;
+    setSearchQuery(query);
+  };
+
+  const handleCategoryChange = (event) => {
+    setSelectedCategory(event.target.value); // Update selectedCategory
+  };
 
   const handleDelete = async (id) => {
-    const batch = writeBatch(firestore); // Create a batch for atomic operations
+    const batch = writeBatch(firestore);
     try {
-      // Show confirmation dialog
       const result = await Swal.fire({
         title: "Are you sure?",
         text: "You won't be able to revert this!",
@@ -44,37 +70,31 @@ export default function Home() {
         cancelButtonColor: "#d33",
         confirmButtonText: "Yes, delete it!",
       });
-  
+
       if (result.isConfirmed) {
-        // Get feedback related to the wisata
         const feedbackCollection = collection(firestore, "feedback");
         const feedbackQuery = query(feedbackCollection, where("id_wisata", "==", id));
         const feedbackSnapshot = await getDocs(feedbackQuery);
-  
-        // Add feedback deletions to the batch
+
         feedbackSnapshot.docs.forEach((feedbackDoc) => {
           batch.delete(doc(firestore, "feedback", feedbackDoc.id));
         });
-  
-        // Add wisata deletion to the batch
+
         batch.delete(doc(firestore, "wisata", id));
-  
-        // Commit the batch
         await batch.commit();
         setWisataData((prevData) => prevData.filter((wisata) => wisata.id !== id));
-  
+
         Swal.fire("Deleted!", "Your file has been deleted.", "success");
       }
     } catch (error) {
-      console.error("Error deleting document: ", error); // Log the full error
+      console.error("Error deleting document: ", error);
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: `Failed to delete the item. Error: ${error.message}`, // Include error message
+        text: `Failed to delete the item. Error: ${error.message}`,
       });
     }
   };
-  
 
   const handleEdit = (id) => {
     Swal.fire({
@@ -88,7 +108,6 @@ export default function Home() {
       cancelButtonText: "Cancel",
     }).then((result) => {
       if (result.isConfirmed) {
-        // Redirect to edit page
         router.push(`/wisata/edit?id=${id}`);
       }
     });
@@ -105,82 +124,76 @@ export default function Home() {
             >
               Tambah Wisata
             </Link>
+
+            <form onSubmit={handleSearch} className="mb-4">
+              <input
+                type="text"
+                name="searchInput"
+                placeholder="Type to search..."
+                className="border p-2 rounded"
+              />
+              <button
+                type="submit"
+                className="ml-2 bg-blue-500 text-white px-4 py-2 rounded"
+              >
+                Search
+              </button>
+            </form>
+
+            <div className="mb-4">
+              <label htmlFor="categoryFilter" className="mr-2">Filter by category:</label>
+              <select
+                id="categoryFilter"
+                value={selectedCategory}
+                onChange={handleCategoryChange}
+                className="border p-2 rounded"
+              >
+                <option value="all">All</option>
+                <option value="alam">Alam</option>
+                <option value="religi">Religi</option>
+                <option value="kuliner">Kuliner</option>
+              </select>
+            </div>
+
             <table className="w-full table-auto">
               <thead>
                 <tr className="bg-gray-2 text-left dark:bg-meta-4">
-                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">
-                    #
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">
-                    Nama Wisata
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">
-                    Kategori
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">
-                    Alamat
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">
-                    Waktu Operasional
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">
-                    Harga Karcis
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">
-                    Rating
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">
-                    Deskripsi
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">
-                    Gambar
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">
-                    Lokasi
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">
-                    Action
-                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">#</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">Nama Wisata</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">Kategori</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">Alamat</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">Waktu Operasional</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">Harga Karcis</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">Rating</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">Deskripsi</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">Gambar</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">Lokasi</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">Status</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium tracking-wider text-black-2">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-gray-200 divide-y bg-white">
                 {wisataData.length > 0 ? (
                   wisataData.map((wisata, index) => (
                     <tr key={wisata.id} className="hover:bg-gray-100">
-                      <td className="text-gray-500 whitespace-nowrap px-4 py-2 text-sm">
-                        {index + 1}
-                      </td>
-                      <td className="text-gray-900 whitespace-nowrap text-wrap px-4 py-2 text-sm">
-                        {wisata.nama_wisata}
-                      </td>
-                      <td className="text-gray-900 whitespace-nowrap px-4 py-2 text-sm">
-                        {wisata.kategori}
-                      </td>
-                      <td className="text-gray-900 whitespace-nowrap px-4 py-2 text-sm">
-                        {wisata.alamat}
+                      <td className="text-gray-500 whitespace-nowrap px-4 py-2 text-sm">{index + 1}</td>
+                      <td className="text-gray-900 whitespace-nowrap text-wrap px-4 py-2 text-sm">{wisata.nama_wisata}</td>
+                      <td className="text-gray-900 whitespace-nowrap px-4 py-2 text-sm">{wisata.kategori}</td>
+                      <td className="text-gray-900 whitespace-nowrap px-4 py-2 text-sm">{wisata.alamat}</td>
+                      <td className="text-gray-900 whitespace-nowrap px-4 py-2 text-sm">{wisata.waktu_operasional}</td>
+                      <td className="text-gray-900 whitespace-nowrap px-4 py-2 text-sm">{wisata.karcis}</td>
+                      <td className="text-gray-900 whitespace-nowrap px-4 py-2 text-sm">{wisata.rating}</td>
+                      <td className="text-gray-900 px-4 py-2 overflow-hidden text-ellipsis max-w-xs">
+                        <div className="line-clamp-3">{wisata.deskripsi}</div>
                       </td>
                       <td className="text-gray-900 whitespace-nowrap px-4 py-2 text-sm">
-                        {wisata.waktu_operasional}
+                        <img src={wisata.image} alt={wisata.nama_wisata} className="h-20 w-20 object-cover" />
                       </td>
                       <td className="text-gray-900 whitespace-nowrap px-4 py-2 text-sm">
-                        {wisata.karcis}
+                        Lat: {wisata.lokasi.latitude}, Lon: {wisata.lokasi.longitude}
                       </td>
                       <td className="text-gray-900 whitespace-nowrap px-4 py-2 text-sm">
-                        {wisata.rating}
-                      </td>
-                      <td className="text-gray-900 whitespace-nowrap text-wrap px-4 py-2 text-sm">
-                        {wisata.deskripsi}
-                      </td>
-                      <td className="text-gray-900 whitespace-nowrap px-4 py-2 text-sm">
-                        <img
-                          src={wisata.image}
-                          alt={wisata.nama_wisata}
-                          className="h-20 w-20 object-cover"
-                        />
-                      </td>
-                      <td className="text-gray-900 whitespace-nowrap px-4 py-2 text-sm">
-                        Lat: {wisata.lokasi.latitude}, Lon:{" "}
-                        {wisata.lokasi.longitude}
+                        {wisata.is_open === "open" ? "Buka" : "Tutup"}
                       </td>
                       <td className="px-6 py-4">
                         <button
@@ -195,7 +208,7 @@ export default function Home() {
                             className="bi bi-pencil"
                             viewBox="0 0 16 16"
                           >
-                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" />
+                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zm1.207 3L10 1.707 3.5 8.207V11h2.793l7.647-7.646-1.647-1.647zM1 13.5V16h2.5L14.915 4.5l-2.5-2.5L1 13.5z" />
                           </svg>
                         </button>
                         <button
@@ -203,29 +216,14 @@ export default function Home() {
                           className="text-red-500"
                         >
                           <svg
-                            className="fill-current"
-                            width="18"
-                            height="18"
-                            viewBox="0 0 18 18"
-                            fill="none"
                             xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            className="bi bi-trash"
+                            viewBox="0 0 16 16"
                           >
-                            <path
-                              d="M13.7535 2.47502H11.5879V1.9969C11.5879 1.15315 10.9129 0.478149 10.0691 0.478149H7.90352C7.05977 0.478149 6.38477 1.15315 6.38477 1.9969V2.47502H4.21914C3.40352 2.47502 2.72852 3.15002 2.72852 3.96565V4.8094C2.72852 5.42815 3.09414 5.9344 3.62852 6.1594L4.07852 15.4688C4.13477 16.6219 5.09102 17.5219 6.24414 17.5219H11.7004C12.8535 17.5219 13.8098 16.6219 13.866 15.4688L14.3441 6.13127C14.8785 5.90627 15.2441 5.3719 15.2441 4.78127V3.93752C15.2441 3.15002 14.5691 2.47502 13.7535 2.47502ZM7.67852 1.9969C7.67852 1.85627 7.79102 1.74377 7.93164 1.74377H10.0973C10.2379 1.74377 10.3504 1.85627 10.3504 1.9969V2.47502H7.70664V1.9969H7.67852ZM4.02227 3.96565C4.02227 3.85315 4.10664 3.74065 4.24727 3.74065H13.7535C13.866 3.74065 13.9785 3.82502 13.9785 3.96565V4.8094C13.9785 4.9219 13.8941 5.0344 13.7535 5.0344H4.24727C4.13477 5.0344 4.02227 4.95002 4.02227 4.8094V3.96565ZM11.7285 16.2563H6.27227C5.79414 16.2563 5.40039 15.8906 5.37227 15.3844L4.95039 6.2719H13.0785L12.6566 15.3844C12.6004 15.8625 12.2066 16.2563 11.7285 16.2563Z"
-                              fill=""
-                            />
-                            <path
-                              d="M9.00039 9.11255C8.66289 9.11255 8.35352 9.3938 8.35352 9.75942V13.3313C8.35352 13.6688 8.63477 13.9782 9.00039 13.9782C9.33789 13.9782 9.64727 13.6969 9.64727 13.3313V9.75942C9.64727 9.3938 9.33789 9.11255 9.00039 9.11255Z"
-                              fill=""
-                            />
-                            <path
-                              d="M11.2502 9.67504C10.8846 9.64692 10.6033 9.90004 10.5752 10.2657L10.4064 12.7407C10.3783 13.0782 10.6314 13.3875 10.9971 13.4157C11.0252 13.4157 11.0252 13.4157 11.0533 13.4157C11.3908 13.4157 11.6721 13.1625 11.6721 12.825L11.8408 10.35C11.8408 9.98442 11.5877 9.70317 11.2502 9.67504Z"
-                              fill=""
-                            />
-                            <path
-                              d="M6.72245 9.67504C6.38495 9.70317 6.1037 10.0125 6.13182 10.35L6.3287 12.825C6.35683 13.1625 6.63808 13.4157 6.94745 13.4157C6.97558 13.4157 6.97558 13.4157 7.0037 13.4157C7.3412 13.3875 7.62245 13.0782 7.59433 12.7407L7.39745 10.2657C7.39745 9.90004 7.08808 9.64692 6.72245 9.67504Z"
-                              fill=""
-                            />
+                            <path d="M5.5 5.5A.5.5 0 0 1 6 5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1-.5-.5zm3.5-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5V4H5V3.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5-.5zM7.5 1a1 1 0 0 1 1 1H6.5a1 1 0 0 1 1-1zM1 5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2H1zm13 0v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5h12zm-2 0H3v9a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V5z" />
                           </svg>
                         </button>
                       </td>
@@ -233,11 +231,8 @@ export default function Home() {
                   ))
                 ) : (
                   <tr>
-                    <td
-                      className="text-gray-500 whitespace-nowrap px-4 py-2 text-sm"
-                      colSpan="11"
-                    >
-                      No data available
+                    <td colSpan="12" className="text-center py-4">
+                      No wisata data available.
                     </td>
                   </tr>
                 )}

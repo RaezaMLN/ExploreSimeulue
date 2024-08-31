@@ -7,7 +7,6 @@ import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import { showAlert } from '@/services/sweetalert';
 import { useRouter } from 'next/navigation';
 
-
 export default function AddWisata() {
   const [namaWisata, setNamaWisata] = useState("");
   const [kategori, setKategori] = useState("");
@@ -22,8 +21,7 @@ export default function AddWisata() {
     latitude: 0.0,
     longitude: 0.0,
   });
-  
-
+  const [isOpen, setIsOpen] = useState("open"); // New state for status
 
   const router = useRouter(); // Initialize the router
 
@@ -66,7 +64,8 @@ export default function AddWisata() {
         lokasi: {
           latitude: lokasi.latitude,
           longitude: lokasi.longitude,
-        }
+        },
+        is_open: isOpen, // Save the status
       });
   
       showAlert("Sukses", "Data wisata berhasil ditambahkan", "success");
@@ -87,6 +86,7 @@ export default function AddWisata() {
       setImage(null);
       setImageURL(null);
       setLokasi({ latitude: 0.0, longitude: 0.0 });
+      setIsOpen("open"); // Reset the status
     } catch (error) {
       console.error("Error adding document: ", error);
       showAlert("Error", "Gagal menambahkan data wisata", "error");
@@ -196,26 +196,36 @@ export default function AddWisata() {
           <div>
             <label className="block text-sm font-medium text-gray-700">Lokasi</label>
             <div className="flex space-x-2">
-            <input
-  type="number"
-  step="0.0001"
-  placeholder="Latitude"
-  value={lokasi.latitude}
-  onChange={(e) => setLokasi((prev) => ({ ...prev, latitude: parseFloat(e.target.value) }))}
-  required
-  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-/>
-<input
-  type="number"
-  step="0.0001"
-  placeholder="Longitude"
-  value={lokasi.longitude}
-  onChange={(e) => setLokasi((prev) => ({ ...prev, longitude: parseFloat(e.target.value) }))}
-  required
-  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-/>
-
+              <input
+                type="number"
+                step="0.0001"
+                placeholder="Latitude"
+                value={lokasi.latitude}
+                onChange={(e) => setLokasi((prev) => ({ ...prev, latitude: parseFloat(e.target.value) }))}
+                required
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              />
+              <input
+                type="number"
+                step="0.0001"
+                placeholder="Longitude"
+                value={lokasi.longitude}
+                onChange={(e) => setLokasi((prev) => ({ ...prev, longitude: parseFloat(e.target.value) }))}
+                required
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              />
             </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Status</label>
+            <select
+              value={isOpen}
+              onChange={(e) => setIsOpen(e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            >
+              <option value="open">Buka</option>
+              <option value="closed">Tutup</option>
+            </select>
           </div>
           <button
             type="submit"
