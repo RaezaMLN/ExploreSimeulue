@@ -25,17 +25,25 @@ const storage = getStorage(firebaseSDK);
 export { firebaseSDK, firestore, storage };
 
 // Function to upload image
-export const uploadImage = async (file: File) => {
+// Function to upload multiple images
+export const uploadImages = async (files: File[]) => {
   try {
-    const storageRef = ref(storage, `images/${file.name}`);
-    await uploadBytes(storageRef, file);
-    const downloadURL = await getDownloadURL(storageRef);
-    return downloadURL;
+    const uploadPromises = files.map(file => {
+      const storageRef = ref(storage, `images/${file.name}`);
+      return uploadBytes(storageRef, file).then(async () => {
+        const downloadURL = await getDownloadURL(storageRef);
+        return downloadURL;
+      });
+    });
+
+    const downloadURLs = await Promise.all(uploadPromises);
+    return downloadURLs; // Array of URLs for all uploaded images
   } catch (error) {
-    console.error("Error uploading image:", error);
+    console.error("Error uploading images:", error);
     throw error; // Rethrow the error to handle it in the calling function
   }
 };
+
 
 // Function to check admin credentials
 export const checkAdminCredentials = async (username: any, password: any) => {

@@ -15,19 +15,17 @@ export default function Home() {
   const firestore = getFirestore(firebaseSDK);
   const [wisataData, setWisataData] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all"); // New state for category filter
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   useEffect(() => {
     const fetchData = async () => {
       const wisataCollection = collection(firestore, "wisata");
       let wisataQuery = wisataCollection;
 
-      // Add category filter if selected
       if (selectedCategory !== "all") {
         wisataQuery = query(wisataCollection, where("kategori", "==", selectedCategory));
       }
 
-      // Add search filter
       if (searchQuery) {
         wisataQuery = query(
           wisataQuery,
@@ -46,7 +44,7 @@ export default function Home() {
     };
 
     fetchData();
-  }, [firestore, searchQuery, selectedCategory]); // Add selectedCategory to dependencies
+  }, [firestore, searchQuery, selectedCategory]);
 
   const handleSearch = (event) => {
     event.preventDefault();
@@ -55,7 +53,7 @@ export default function Home() {
   };
 
   const handleCategoryChange = (event) => {
-    setSelectedCategory(event.target.value); // Update selectedCategory
+    setSelectedCategory(event.target.value);
   };
 
   const handleDelete = async (id) => {
@@ -69,7 +67,7 @@ export default function Home() {
         confirmButtonColor: "#3085d6",
         cancelButtonColor: "#d33",
         confirmButtonText: "Ya, hapus!",
-      });      
+      });
 
       if (result.isConfirmed) {
         const feedbackCollection = collection(firestore, "feedback");
@@ -111,7 +109,6 @@ export default function Home() {
         router.push(`/wisata/edit?id=${id}`);
       }
     });
-    
   };
 
   return (
@@ -188,53 +185,54 @@ export default function Home() {
                         <div className="line-clamp-3">{wisata.deskripsi}</div>
                       </td>
                       <td className="text-gray-900 whitespace-nowrap px-4 py-2 text-sm">
-                        <img src={wisata.image} alt={wisata.nama_wisata} className="h-20 w-20 object-cover" />
+                        {/* Periksa apakah wisata.image adalah array atau string */}
+                        {Array.isArray(wisata.images) ? (
+                          wisata.images.length > 0 ? (
+                            <div className="flex space-x-2 overflow-x-auto">
+                              {wisata.images.map((imgUrl, index) => (
+                                <img
+                                  key={index}
+                                  src={imgUrl}
+                                  alt={`Gambar ${index + 1}`}
+                                  className="h-20 w-20 object-cover"
+                                />
+                              ))}
+                            </div>
+                          ) : (
+                            <p>No images available</p>
+                          )
+                        ) : typeof wisata.image === 'string' ? (
+                          <img
+                            src={wisata.image}
+                            alt={wisata.nama_wisata}
+                            className="h-20 w-20 object-cover"
+                          />
+                        ) : (
+                          <p>No images available</p>
+                        )}
                       </td>
+
+                      <td className="text-gray-900 whitespace-nowrap px-4 py-2 text-sm">{`${wisata.lokasi.latitude}, ${wisata.lokasi.longitude}`}</td>
+                      <td className="text-gray-900 whitespace-nowrap px-4 py-2 text-sm">{wisata.is_open}</td>
                       <td className="text-gray-900 whitespace-nowrap px-4 py-2 text-sm">
-                        Lat: {wisata.lokasi.latitude}, Lon: {wisata.lokasi.longitude}
-                      </td>
-                      <td className="text-gray-900 whitespace-nowrap px-4 py-2 text-sm">
-                        {wisata.is_open === "open" ? "Buka" : "Tutup"}
-                      </td>
-                      <td className="px-6 py-4">
                         <button
                           onClick={() => handleEdit(wisata.id)}
-                          className="mr-2 text-blue-500"
+                          className="mr-2 bg-yellow-500 px-4 py-2 text-white rounded hover:bg-yellow-600"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            fill="currentColor"
-                            className="bi bi-pencil"
-                            viewBox="0 0 16 16"
-                          >
-                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zm1.207 3L10 1.707 3.5 8.207V11h2.793l7.647-7.646-1.647-1.647zM1 13.5V16h2.5L14.915 4.5l-2.5-2.5L1 13.5z" />
-                          </svg>
+                          Edit
                         </button>
                         <button
                           onClick={() => handleDelete(wisata.id)}
-                          className="text-red-500"
+                          className="bg-red-500 px-4 py-2 text-white rounded hover:bg-red-600"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            fill="currentColor"
-                            className="bi bi-trash"
-                            viewBox="0 0 16 16"
-                          >
-                            <path d="M5.5 5.5A.5.5 0 0 1 6 5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1-.5-.5zm3.5-1a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5V4H5V3.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5-.5zM7.5 1a1 1 0 0 1 1 1H6.5a1 1 0 0 1 1-1zM1 5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2H1zm13 0v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5h12zm-2 0H3v9a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V5z" />
-                          </svg>
+                          Delete
                         </button>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="12" className="text-center py-4">
-                    Data wisata tidak tersedia.
-                    </td>
+                    <td colSpan="12" className="text-center px-4 py-2 text-sm text-gray-500">No data available</td>
                   </tr>
                 )}
               </tbody>
