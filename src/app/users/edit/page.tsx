@@ -32,7 +32,7 @@ export default function EditUserPage() {
           setUsername(data.username);
           setEmail(data.email);
         } else {
-          Swal.fire('Error!', 'No user found.', 'error');
+          Swal.fire('Gagal!', 'Pengguna tidak ditemukan.', 'error');
         }
       };
 
@@ -46,14 +46,14 @@ export default function EditUserPage() {
     if (!id) return;
 
     if (password !== confirmPassword) {
-      Swal.fire('Error!', 'Passwords do not match.', 'error');
+      Swal.fire('Gagal!', 'Password tidak cocok.', 'error');
       return;
     }
 
     try {
       const docRef = doc(firestore, 'users', id);
       
-      // Encrypt the password if provided
+      // Enkripsi password jika diberikan
       const encryptedPassword = password ? await bcrypt.hash(password, 10) : user.password;
 
       await updateDoc(docRef, {
@@ -62,13 +62,14 @@ export default function EditUserPage() {
         password: encryptedPassword,
       });
 
-      Swal.fire('Success!', 'User updated successfully.', 'success');
+      Swal.fire('Berhasil!', 'Pengguna berhasil diperbarui.', 'success');
       router.push('/users');
     } catch (error) {
-      console.error("Error updating user:", error);
-      Swal.fire('Error!', 'There was an error updating the user.', 'error');
+      console.error("Terjadi kesalahan saat memperbarui pengguna:", error);
+      Swal.fire('Gagal!', 'Terjadi kesalahan saat memperbarui pengguna.', 'error');
     }
   };
+
 
   return (
     <>

@@ -27,16 +27,17 @@ export default function AddUser() {
         createdAt: new Date(),
       });
 
-      Swal.fire('Success!', 'User has been added.', 'success');
+      Swal.fire('Berhasil!', 'Pengguna telah ditambahkan.', 'success');
       setEmail('');
       setUsername('');
       setPassword('');
       
     } catch (error) {
-      console.error("Error adding user:", error);
-      Swal.fire('Error!', 'There was an error adding the user.', 'error');
+      console.error("Terjadi kesalahan saat menambahkan pengguna:", error);
+      Swal.fire('Gagal!', 'Terjadi kesalahan saat menambahkan pengguna.', 'error');
     }
   };
+
 
   return (
     <>

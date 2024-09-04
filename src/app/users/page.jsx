@@ -31,36 +31,36 @@ export default function UsersPage() {
 
   const handleDelete = async (id) => {
     const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
+      title: 'Anda yakin?',
+      text: "Data ini tidak bisa dikembalikan!",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!'
+      confirmButtonText: 'Ya, hapus!'
     });
 
     if (result.isConfirmed) {
       try {
         await deleteDoc(doc(firestore, 'users', id));
         setUsersList(prevList => prevList.filter(user => user.id !== id));
-        Swal.fire('Deleted!', 'User has been deleted.', 'success');
+        Swal.fire('Terhapus!', 'Data pengguna telah dihapus.', 'success');
       } catch (error) {
-        console.error("Error deleting user:", error);
-        Swal.fire('Error!', 'There was an error deleting the user.', 'error');
+        console.error("Terjadi kesalahan saat menghapus pengguna:", error);
+        Swal.fire('Error!', 'Gagal menghapus data pengguna.', 'error');
       }
     }
   };
 
-  const handleEdit = (id) => {
+const handleEdit = (id) => {
     Swal.fire({
-      title: 'Edit User',
-      text: 'Are you sure you want to edit this user?',
+      title: 'Edit Pengguna',
+      text: 'Anda yakin ingin mengedit data pengguna ini?',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, edit it!'
+      confirmButtonText: 'Ya, edit!'
     }).then((result) => {
       if (result.isConfirmed) {
         router.push(`/users/edit?id=${id}`);
@@ -68,17 +68,18 @@ export default function UsersPage() {
     });
   };
 
+
   return (
     <DefaultLayout>
       <main className="h-screen p-4 bg-gray-100">
         <Link
-              href="/user/add"
+              href="/users/add"
               className="mb-4 inline-block rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
             >
               Tambah Pengguna
             </Link>
         <div className="container mx-auto bg-white shadow-md rounded-lg p-6 overflow-x-auto">
-          <h1 className="text-2xl font-bold mb-4">User List</h1>
+          <h1 className="text-2xl font-bold mb-4">Daftar Pengguna</h1>
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>

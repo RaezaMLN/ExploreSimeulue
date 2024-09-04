@@ -40,14 +40,21 @@ export default function AddWisata() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
   
-    // Validate latitude and longitude
-    if (!isValidLatitude(lokasi.latitude) || !isValidLongitude(lokasi.longitude)) {
-      showAlert("Error", "Latitude or Longitude is invalid", "error");
+    // Validasi rating
+    const ratingValue = parseFloat(rating);
+    if (ratingValue > 5) {
+      showAlert("Error", "Rating tidak boleh lebih dari 5", "error");
+      return; // Hentikan proses submit
+    }
   
-      // Reset latitude and longitude inputs
+    // Validasi latitude dan longitude
+    if (!isValidLatitude(lokasi.latitude) || !isValidLongitude(lokasi.longitude)) {
+      showAlert("Error", "Latitude atau Longitude yang Anda masukkan salah", "error");
+  
+      // Reset latitude dan longitude
       setLokasi({ latitude: 0.0, longitude: 0.0 });
   
-      return; // Prevent form submission
+      return; // Hentikan proses submit
     }
   
     try {
@@ -58,24 +65,24 @@ export default function AddWisata() {
         alamat,
         waktu_operasional: waktuOperasional,
         karcis,
-        rating: parseFloat(rating), // Rating dikonversi ke number
+        rating: ratingValue, // Rating sudah dalam bentuk number
         deskripsi,
         image: imageURL, // Simpan URL gambar
         lokasi: {
           latitude: lokasi.latitude,
           longitude: lokasi.longitude,
         },
-        is_open: isOpen, // Save the status
+        is_open: isOpen, // Simpan status
       });
   
       showAlert("Sukses", "Data wisata berhasil ditambahkan", "success");
   
-      // Redirect to /wisata
+      // Redirect ke /wisata
       setTimeout(() => {
         router.push('/wisata');
-      }, 1500); // Delay before redirect to allow alert to be visible
+      }, 1500); // Delay sebelum redirect agar alert terlihat
   
-      // Optionally, clear form
+      // Opsional, clear form
       setNamaWisata("");
       setKategori("");
       setAlamat("");
@@ -86,12 +93,13 @@ export default function AddWisata() {
       setImage(null);
       setImageURL(null);
       setLokasi({ latitude: 0.0, longitude: 0.0 });
-      setIsOpen("open"); // Reset the status
+      setIsOpen("open"); // Reset status
     } catch (error) {
       console.error("Error adding document: ", error);
       showAlert("Error", "Gagal menambahkan data wisata", "error");
     }
   };
+  
   
   const isValidLatitude = (lat: number) => lat >= -90 && lat <= 90;
   const isValidLongitude = (lon: number) => lon >= -180 && lon <= 180;

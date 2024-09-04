@@ -62,14 +62,14 @@ export default function Home() {
     const batch = writeBatch(firestore);
     try {
       const result = await Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
+        title: "Apakah Anda yakin?",
+        text: "Anda tidak akan dapat mengembalikan ini!",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#3085d6",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, delete it!",
-      });
+        confirmButtonText: "Ya, hapus!",
+      });      
 
       if (result.isConfirmed) {
         const feedbackCollection = collection(firestore, "feedback");
@@ -84,14 +84,14 @@ export default function Home() {
         await batch.commit();
         setWisataData((prevData) => prevData.filter((wisata) => wisata.id !== id));
 
-        Swal.fire("Deleted!", "Your file has been deleted.", "success");
+        Swal.fire("Dihapus!", "File Anda telah dihapus.", "success");
       }
     } catch (error) {
       console.error("Error deleting document: ", error);
       Swal.fire({
         icon: "error",
-        title: "Error",
-        text: `Failed to delete the item. Error: ${error.message}`,
+        title: "Kesalahan",
+        text: `Gagal menghapus item. Kesalahan: ${error.message}`,
       });
     }
   };
@@ -99,18 +99,19 @@ export default function Home() {
   const handleEdit = (id) => {
     Swal.fire({
       title: "Edit Wisata",
-      text: "This will navigate to the edit page.",
+      text: "Ini akan mengarahkan Anda ke halaman edit.",
       icon: "info",
       confirmButtonColor: "#3085d6",
-      confirmButtonText: "Go to Edit Page",
+      confirmButtonText: "Pergi ke Halaman Edit",
       showCancelButton: true,
       cancelButtonColor: "#d33",
-      cancelButtonText: "Cancel",
+      cancelButtonText: "Batal",
     }).then((result) => {
       if (result.isConfirmed) {
         router.push(`/wisata/edit?id=${id}`);
       }
     });
+    
   };
 
   return (
@@ -125,7 +126,7 @@ export default function Home() {
               Tambah Wisata
             </Link>
 
-            <form onSubmit={handleSearch} className="mb-4">
+            {/* <form onSubmit={handleSearch} className="mb-4">
               <input
                 type="text"
                 name="searchInput"
@@ -138,10 +139,10 @@ export default function Home() {
               >
                 Search
               </button>
-            </form>
+            </form> */}
 
             <div className="mb-4">
-              <label htmlFor="categoryFilter" className="mr-2">Filter by category:</label>
+              <label htmlFor="categoryFilter" className="mr-2">Filter berdasarkan kategory:</label>
               <select
                 id="categoryFilter"
                 value={selectedCategory}
@@ -232,7 +233,7 @@ export default function Home() {
                 ) : (
                   <tr>
                     <td colSpan="12" className="text-center py-4">
-                      No wisata data available.
+                    Data wisata tidak tersedia.
                     </td>
                   </tr>
                 )}

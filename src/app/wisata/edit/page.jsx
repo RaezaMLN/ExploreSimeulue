@@ -59,30 +59,39 @@ const EditWisata = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!isValidLatitude(parseFloat(lokasi.latitude)) || !isValidLongitude(parseFloat(lokasi.longitude))) {
-      Swal.fire('Error', 'Latitude or Longitude is invalid', 'error');
-      return; // Prevent form submission
+  
+    const ratingParsed = parseFloat(rating);
+    const latitudeParsed = parseFloat(lokasi.latitude);
+    const longitudeParsed = parseFloat(lokasi.longitude);
+  
+    if (!isValidLatitude(latitudeParsed) || !isValidLongitude(longitudeParsed)) {
+      Swal.fire('Error', 'Latitude atau Longitude tidak valid', 'error');
+      return; // Menghentikan pengiriman form
     }
-
+  
+    if (isNaN(ratingParsed) || ratingParsed < 0 || ratingParsed > 5) {
+      Swal.fire('Error', 'Rating harus berupa angka antara 0 dan 5', 'error');
+      return; // Menghentikan pengiriman form
+    }
+  
     Swal.fire({
-      title: 'Are you sure?',
-      text: "Do you want to save the changes?",
+      title: 'Apakah Anda yakin?',
+      text: "Apakah Anda ingin menyimpan perubahan ini?",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, save it!'
+      confirmButtonText: 'Ya, simpan!'
     }).then(async (result) => {
       if (result.isConfirmed) {
         let imageUrl = existingImage;
-
+  
         if (image) {
           const storageRef = ref(storage, `images/${image.name}`);
           await uploadBytes(storageRef, image);
           imageUrl = await getDownloadURL(storageRef);
         }
-
+  
         const docRef = doc(firestore, 'wisata', id);
         await updateDoc(docRef, {
           nama_wisata: namaWisata,
@@ -90,21 +99,22 @@ const EditWisata = () => {
           alamat,
           waktu_operasional: waktuOperasional,
           karcis,
-          rating: parseFloat(rating), // Convert rating to number
+          rating: ratingParsed, // Gunakan rating yang sudah divalidasi
           deskripsi,
           lokasi: {
-            latitude: parseFloat(lokasi.latitude), // Convert latitude to number
-            longitude: parseFloat(lokasi.longitude) // Convert longitude to number
+            latitude: latitudeParsed, // Gunakan latitude yang sudah divalidasi
+            longitude: longitudeParsed // Gunakan longitude yang sudah divalidasi
           },
           image: imageUrl,
-          is_open: isOpen, // Save the status
+          is_open: isOpen, // Simpan status
         });
-
-        Swal.fire('Saved!', 'Your changes have been saved.', 'success');
+  
+        Swal.fire('Tersimpan!', 'Perubahan Anda telah disimpan.', 'success');
         router.push('/wisata');
       }
     });
   };
+  
 
   return (
     <DefaultLayout>

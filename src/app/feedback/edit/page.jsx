@@ -26,24 +26,35 @@ export default function EditFeedbackPage() {
         setRating(docSnap.data().rating);
         setFeed(docSnap.data().feed);
       } else {
-        console.log('No such document!');
+        console.log('Dokumen tidak ditemukan!');
       }
     };
 
     fetchFeedback();
   }, [id]);
 
+  const isValidRating = (rating) => {
+    const numRating = parseFloat(rating);
+    return !isNaN(numRating) && numRating >= 0 && numRating <= 5; // Assuming rating is between 0 and 5
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-     // Show confirmation dialog
-     const result = await Swal.fire({
+
+    if (!isValidRating(rating)) {
+      Swal.fire('Error', 'Rating harus antara 0 dan 5.', 'error');
+      return;
+    }
+
+    // Tampilkan dialog konfirmasi
+    const result = await Swal.fire({
       title: 'Konfirmasi',
       text: 'Apakah Anda yakin ingin memperbarui feedback ini?',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Ya, update!',
+      confirmButtonText: 'Ya, perbarui!',
       cancelButtonText: 'Batal'
     });
 
@@ -52,15 +63,15 @@ export default function EditFeedbackPage() {
 
       try {
         await updateDoc(docRef, {
-          rating,
+          rating: parseFloat(rating), // Konversi rating ke angka
           feed,
-          // Add other fields if necessary
+          // Tambahkan field lain jika perlu
         });
-        Swal.fire('Success', 'Feedback updated successfully', 'success');
+        Swal.fire('Berhasil!', 'Feedback berhasil diperbarui.', 'success');
         router.push('/feedback');
       } catch (error) {
-        console.error("Error updating feedback:", error);
-        Swal.fire('Error', 'Failed to update feedback', 'error');
+        console.error("Error memperbarui feedback:", error);
+        Swal.fire('Error', 'Gagal memperbarui feedback', 'error');
       }
     }
   };

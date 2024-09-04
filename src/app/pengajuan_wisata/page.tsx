@@ -79,15 +79,15 @@ export default function PengajuanWisata() {
 
   const handleApprove = async (id: string, data: Pengajuan) => {
     const result = await Swal.fire({
-      title: 'Approve this submission?',
-      text: "Are you sure you want to approve this submission?",
+      title: 'Setujui Pengajuan Ini?',
+      text: "Apakah Anda yakin ingin menyetujui pengajuan ini?",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, approve it!',
+      confirmButtonText: 'Ya, setujui!',
     });
-
+  
     if (result.isConfirmed) {
       try {
         const formattedData = {
@@ -100,38 +100,39 @@ export default function PengajuanWisata() {
           status: "approved",
           is_open: "open", // Tambahkan field is_open dengan value "open"
         };
-
-        // Update status pengajuan di koleksi pengajuan_wisata
-        await updateDoc(doc(firestore, "pengajuan_wisata", id), { status: "approved" });
-
+  
         // Simpan data yang di-approve ke koleksi wisata
         await setDoc(doc(firestore, "wisata", id), formattedData);
-
-        // Hapus pengajuan dari daftar setelah disetujui
+  
+        // Hapus pengajuan dari koleksi pengajuan_wisata setelah disetujui
+        await deleteDoc(doc(firestore, "pengajuan_wisata", id));
+  
+        // Update state untuk menghapus data yang sudah disetujui dari tampilan
         setPengajuanData((prevData) =>
           prevData.filter((pengajuan) => pengajuan.id !== id)
         );
         setFilteredData((prevData) =>
           prevData.filter((pengajuan) => pengajuan.id !== id)
         );
-
-        Swal.fire('Approved!', 'The submission has been approved and added to wisata.', 'success');
+  
+        Swal.fire('Disetujui!', 'Pengajuan telah disetujui dan ditambahkan ke wisata.', 'success');
       } catch (error:any) {
         console.error("Error approving document: ", error);
-        Swal.fire('Error!', `There was an error approving the submission: ${error.message}`, 'error');
+        Swal.fire('Error!', `Terjadi kesalahan saat menyetujui pengajuan: ${error.message}`, 'error');
       }
     }
   };
+  
 
   const handleReject = async (id: string) => {
     const result = await Swal.fire({
-      title: 'Reject this submission?',
-      text: "Are you sure you want to reject this submission?",
+      title: 'Tolak Pengajuan Ini?',
+      text: "Apakah Anda yakin ingin menolak pengajuan ini?",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, reject it!',
+      confirmButtonText: 'Ya, tolak!',
     });
 
     if (result.isConfirmed) {
@@ -143,23 +144,23 @@ export default function PengajuanWisata() {
         setFilteredData((prevData) =>
           prevData.filter((pengajuan) => pengajuan.id !== id)
         );
-        Swal.fire('Rejected!', 'The submission has been rejected.', 'success');
+        Swal.fire('Ditolak!', 'Pengajuan telah ditolak.', 'success');
       } catch (error:any) {
         console.error("Error rejecting document: ", error);
-        Swal.fire('Error!', `There was an error rejecting the submission: ${error.message}`, 'error');
+        Swal.fire('Error!', `Terjadi kesalahan saat menolak pengajuan: ${error.message}`, 'error');
       }
     }
   };
 
   const handleDelete = async (id: string) => {
     const result = await Swal.fire({
-      title: 'Delete this submission?',
-      text: "Are you sure you want to delete this submission? This action cannot be undone.",
+      title: 'Hapus Pengajuan Ini?',
+      text: "Apakah Anda yakin ingin menghapus pengajuan ini? Tindakan ini tidak dapat dibatalkan.",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, delete it!',
+      confirmButtonText: 'Ya, hapus!',
     });
 
     if (result.isConfirmed) {
@@ -171,10 +172,10 @@ export default function PengajuanWisata() {
         setFilteredData((prevData) =>
           prevData.filter((pengajuan) => pengajuan.id !== id)
         );
-        Swal.fire('Deleted!', 'The submission has been deleted.', 'success');
+        Swal.fire('Dihapus!', 'Pengajuan telah dihapus.', 'success');
       } catch (error) {
         console.error("Error deleting document: ", error);
-        Swal.fire('Error!', 'There was an error deleting the submission.', 'error');
+        Swal.fire('Error!', 'Terjadi kesalahan saat menghapus pengajuan.', 'error');
       }
     }
   };
@@ -188,7 +189,7 @@ export default function PengajuanWisata() {
           {/* Filter Kategori */}
           <div className="mb-4">
             <label htmlFor="kategoriFilter" className="block text-sm font-medium text-gray-700">
-              Filter by Kategori:
+              Filter berdasarkan Kategori:
             </label>
             <select
               id="kategoriFilter"

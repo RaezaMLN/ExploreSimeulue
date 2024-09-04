@@ -35,43 +35,43 @@ export default function FeedbackPage() {
 
   const handleDelete = async (id) => {
     const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
+      title: 'Apakah Anda yakin?',
+      text: "Anda tidak akan bisa membatalkan ini!",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!'
+      confirmButtonText: 'Ya, hapus!'
     });
-
+  
     if (result.isConfirmed) {
       try {
         await deleteDoc(doc(firestore, 'feedback', id));
         setFeedbackList(prevList => prevList.filter(feedback => feedback.id !== id));
-        Swal.fire('Deleted!', 'Feedback has been deleted.', 'success');
+        Swal.fire('Dihapus!', 'Feedback telah dihapus.', 'success');
       } catch (error) {
-        console.error("Error deleting feedback:", error);
-        Swal.fire('Error!', 'There was an error deleting the feedback.', 'error');
+        console.error("Error menghapus feedback:", error);
+        Swal.fire('Error!', 'Terjadi kesalahan saat menghapus feedback.', 'error');
       }
     }
   };
-
   
   const handleEdit = (id) => {
     Swal.fire({
       title: 'Edit Feedback',
-      text: 'Are you sure you want to edit this feedback?',
+      text: 'Apakah Anda yakin ingin mengedit feedback ini?',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, edit it!'
+      confirmButtonText: 'Ya, edit!'
     }).then((result) => {
       if (result.isConfirmed) {
         router.push(`/feedback/edit?id=${id}`);
       }
     });
   };
+  
 
   return (
     <>
